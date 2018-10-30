@@ -25,15 +25,18 @@ namespace Client_Side
 
         static void Main(string[] args)
         {
-            Student[] students = input();
-            File.WriteAllText(@"Files\list.json", JsonConvert.SerializeObject(students));
+            //Student[] students = input();
+            //File.WriteAllText(@"Files\list.json", JsonConvert.SerializeObject(students));
             TcpClient client = new TcpClient("127.0.0.1", 5000);
-            client.Client.SendFile(@"Files\list.json");
+            //client.Client.SendFile(@"Files\list.json");
             NetworkStream stream = client.GetStream();
+            byte[] input = Encoding.ASCII.GetBytes(Console.ReadLine());
+            stream.Write(input, 0, input.Length);
+
             byte[] buffer = new byte[1024];
             int bytesRead = stream.Read(buffer, 0, 1024);
-            string message = Encoding.ASCII.GetString(buffer, 0, bytesRead);
-            Console.WriteLine(message);
+            double result = BitConverter.ToDouble(buffer, 0);
+            Console.WriteLine("{0}", result);
             Console.ReadKey();
         }
     }

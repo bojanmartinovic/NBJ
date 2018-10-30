@@ -21,6 +21,37 @@ namespace Server_Side
             return x[k].Ime;
         }
 
+        static double convert(string s, int p, int q)
+        {
+            int x = 0;
+            int i;
+            for (i = p; i <= q && s[i] != '.'; i++)
+                x = 10 * x + s[i] - '0';
+            if (i > q)
+                return x;
+            i++;
+            double y = 0;
+            for (int e = 10; i <= q; e /= 10, i++)
+                y += (s[i] - '0') / e;
+            return x + y;
+        }
+
+        static double calculate(string s)
+        {
+            int i;
+            for (i = 0; char.IsDigit(s[i]); i++) ;
+            double a = convert(s, 0, i - 1), b = convert(s, i + 1, s.Length - 1);
+            if (s[i] == '+')
+                return a + b;
+            if (s[i] == '-')
+                return a - b;
+            if (s[i] == '*')
+                return a * b;
+            if (s[i] == '/' && b != 0)
+                return a / b;
+            return 0;
+        }
+
         static void Main(string[] args)
         {
             TcpListener listener = new TcpListener(IPAddress.Parse("127.0.0.1"), 5000);
@@ -36,8 +67,8 @@ namespace Server_Side
             while (true)
             {
                 client = listener.AcceptTcpClient();
-                FileStream file = File.Create(@"Files\output.json");
                 NetworkStream stream = client.GetStream();
+                /*FileStream file = File.Create(@"Files\output.json");
                 int readBytes;
                 do
                 {
@@ -48,7 +79,14 @@ namespace Server_Side
                 file.Close();
                 Student[] students = JsonConvert.DeserializeObject<Student[]>(File.ReadAllText(@"Files\output.json"));
                 byte[] returnBuffer = Encoding.ASCII.GetBytes(max(students));
+                stream.Write(returnBuffer, 0, returnBuffer.Length);*/
+
+                byte[] buffer = new byte[1024];
+                int bytesRead = stream.Read(buffer, 0, 1024); 
+                double s = calculate(Encoding.ASCII.GetString(buffer, 0, bytesRead));
+                byte[] returnBuffer = BitConverter.GetBytes(s);
                 stream.Write(returnBuffer, 0, returnBuffer.Length);
+
                 stream.Close();
                 client.Close();
             }
